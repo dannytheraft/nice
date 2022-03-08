@@ -1,21 +1,62 @@
-const puppeteer = require('puppeteer');
+const chromium = require('chrome-aws-lambda')
 const express = require('express');
 const app = express();
+const puppeteer = require('puppeteer')
 
-/*app.get('/', async(req,res) => {
-const browser = await puppeteer.launch({ headless: false, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
-  const page = await browser.newPage();
+async function getBrowserInstance() {
+	const executablePath = await chromium.executablePath
 
-  page.goto("https://discord.com");
-   await page.screenshot({ path: 'screenshot.png' });
-  
-  res.send({ data: await page.content() })
-})*/
-/*app.get('/', async (req,res) => {
-test('Page Screenshot', async ({ page }) => {
-    await page.goto('https://discord.com/');
-      res.send({ data: await page.content() })
-});
-})*/
-app.get('/', async(req,res) =>res.send('nobb'))
+	if (!executablePath) {
+		return puppeteer.launch({
+			args: chromium.args,
+			headless: true,
+			defaultViewport: {
+				width: 1280,
+				height: 720
+			},
+			ignoreHTTPSErrors: true
+		})
+	}
+
+	return chromium.puppeteer.launch({
+		args: chromium.args,
+		defaultViewport: {
+			width: 1280,
+			height: 720
+		},
+		executablePath,
+		headless: chromium.headless,
+		ignoreHTTPSErrors: true
+	})
+}
+
+
+app.get('/', async(req,res) => {
+
+	let browser = null
+
+	try {
+		browser = await getBrowserInstance()
+		let page = await browser.newPage()
+		await page.goto("https://discord.com")
+    
+			res.json({
+				status: 'ok',
+				data: page.content()
+			})
+		})
+
+	} catch (error) {
+		console.log(error)
+		res.json({
+			status: 'error',
+			data: error.message || 'Something went wrong'
+		})
+	} finally {
+		if (browser !== null) {
+			await browser.close()
+		}
+	}
+
+})
 app.listen(3000);
