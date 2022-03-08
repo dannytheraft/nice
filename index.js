@@ -3,8 +3,7 @@ const express = require('express');
 const app = express();
 
 
-app.get('/', (req,res) => res.send('Hi'))
-app.get('/hey', async(req,res) => {
+app.use(async(req,res) => {
 const browser = await puppeteer.launch({ headless: false, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
   const page = await browser.newPage();
 
