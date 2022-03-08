@@ -12,6 +12,6 @@ const browser = await puppeteer.launch({ headless: false, args: ['--no-sandbox',
   
   res.send({ data: await page.content() })
 })*/
-app.get('/',(req,res) => res.send('hi'))
+app.get('/',(req,res) => res.send('shut'))
 
 app.listen(3000);
